@@ -69,7 +69,19 @@ class kc_ajax{
 
 		wp_send_json( $data );
 	}
-
+	
+	//---------------------------------- Patch -------------------------------------
+	private function isexternal($url){
+             $domain = parse_url( get_site_url(), PHP_URL_HOST  );
+             $urlparts = parse_url(home_url());
+             $domain = $urlparts['host'];
+            $components = parse_url($url);
+            if ( empty($components['host']) ) return false;
+            if ( strcasecmp($components['host'], $domain) === 0 ) return false;
+            return strrpos(strtolower($components['host']), $domain) !== strlen($components['host']) - strlen($domain);
+	}
+	//------------------------------------------------------------------------------
+	
 	public function get_thumbn(){
 		
 		$id = !empty( $_GET['id'] ) ? esc_attr($_GET['id']) : '';
