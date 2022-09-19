@@ -80,29 +80,37 @@ class kc_ajax{
             if ( strcasecmp($components['host'], $domain) === 0 ) return false;
             return strrpos(strtolower($components['host']), $domain) !== strlen($components['host']) - strlen($domain);
 	}
-	//------------------------------------------------------------------------------
 	
 	public function get_thumbn(){
-		
+		global $kc;
 		$id = !empty( $_GET['id'] ) ? esc_attr($_GET['id']) : '';
 		$size = !empty( $_GET['size'] ) ? esc_attr($_GET['size']) : 'medium';
 		$type = !empty( $_GET['type'] ) ? esc_attr($_GET['type']) : '';
-	
+
 		if ($type == 'filter_url') {
-			header( 'location: '.kc_attach_url(KC_SITE.urldecode($id)));
+			/* MODIFIED: If $id is a external url load default image */
+			/*header( 'location: '.kc_attach_url(KC_SITE.urldecode($id)));
+			exit;*/			
+			if(!$this->isexternal($id)) {
+				header( 'location: '.kc_attach_url(KC_SITE.urldecode($id)));
+			}
+			else
+			{
+				header( 'location: '. $kc->default_image());
+			}
 			exit;
 		}
-		
+
 		if( $id == '' || $id == 'undefined' )
 		{
-			header( 'location: '.KC_URL.'/assets/images/get_start.jpg' );
+			header( 'location: '.$kc->apply_filters('kc_default_image', KC_URL.'/assets/images/get_start.jpg') );
 			exit;
 		}
 
 		if( $type == 'post_featured' )
 		{
-			
-			
+
+
 			$img = get_the_post_thumbnail_url( $id, $size );
 			if (strpos($source, site_url()) !== false) {
 				$meta = get_post_meta( $id, 'kc_data', true );
@@ -112,24 +120,35 @@ class kc_ajax{
 			if( !empty( $img ) ){
 				header( 'location: '.$img );
 			}else{
-				header( 'location: '.KC_URL.'/assets/images/get_start_section.jpg' );
+				header( 'location: '. $kc->apply_filters('kc_section_default_image', KC_URL.'/assets/images/get_start_section.jpg'));
 			}
-			
+
 			exit;
-			
+
 		}
 
 		$img = wp_get_attachment_image_src( $id, $size );
 
 		if( !empty( $img[0] ) )
 		{
-			header( 'location: '.$img[0] );
+			/* MODIFIED: If $id is a external url load default image */
+			//header( 'location: '.$img[0] );
+			if(!$this->isexternal($img[0])) {
+				header( 'location: '.$img[0] );
+			}
+			else
+			{
+				header( 'location: '. $kc->default_image());
+			}
 		}
 		else
 		{
-			header( 'location: '.KC_URL.'/assets/images/default.jpg' );
+			header( 'location: '. $kc->default_image());
 		}
+		exit();
 	}
+	
+	//------------------------------------------------------------------------------
 
     public function get_thumbn_size( $abc ){
 
